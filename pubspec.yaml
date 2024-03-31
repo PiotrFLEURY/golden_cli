@@ -1,5 +1,5 @@
 name: golden_cli
-description: A Dart CLI made to help with multi plaform Golden comparisons in Flutter.
+description: A Dart CLI made to help with multi platform Golden comparisons in Flutter.
 version: 1.0.0
 publish_to: none
 
@@ -15,9 +15,10 @@ dependencies:
   pub_updater: ^0.3.1
 
 dev_dependencies:
-  build_runner: ^2.4.4
+  build_runner: ^2.4.9
   build_verify: ^3.1.0
   build_version: ^2.1.1
+  mockito: ^5.4.4
   mocktail: ^1.0.0
   test: ^1.24.6
   very_good_analysis: ^5.1.0

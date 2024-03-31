@@ -1,9 +1,7 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:args/command_runner.dart';
 import 'package:file/file.dart';
-import 'package:file/local.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:process/process.dart';
 
@@ -18,8 +16,8 @@ class TestCommand extends Command<int> {
   /// {@macro sample_command}
   TestCommand({
     required Logger logger,
-    ProcessManager processManager = const LocalProcessManager(),
-    FileSystem fileSystem = const LocalFileSystem(),
+    required ProcessManager processManager,
+    required FileSystem fileSystem,
   })  : _logger = logger,
         _processManager = processManager,
         _fileSystem = fileSystem {
