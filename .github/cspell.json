@@ -19,6 +19,7 @@
   ],
   "useGitignore": true,
   "words": [
-    "worktree"
+    "worktree",
+    "goldens"
   ]
 }

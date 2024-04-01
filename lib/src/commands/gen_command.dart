@@ -2,14 +2,14 @@ import 'package:args/command_runner.dart';
 import 'package:golden_cli/src/services/golden_service.dart';
 import 'package:mason_logger/mason_logger.dart';
 
-/// {@template sample_command}
+/// {@template gen_command}
 ///
-/// `golden test`
-/// A [Command] to execute golden test from a git reference.
+/// `golden gen`
+/// A [Command] to generate the golden files from a git reference and copy them
 /// {@endtemplate}
-class TestCommand extends Command<int> {
-  /// {@macro test_command}
-  TestCommand({
+class GenCommand extends Command<int> {
+  /// {@macro gen_command}
+  GenCommand({
     required Logger logger,
     required GoldenService goldenService,
   })  : _logger = logger,
@@ -23,11 +23,10 @@ class TestCommand extends Command<int> {
   }
 
   @override
-  String get description =>
-      'Executes Flutter Golden tests and compares them against a Git reference';
+  String get description => 'Generate the golden files from a git reference';
 
   @override
-  String get name => 'test';
+  String get name => 'gen';
 
   final Logger _logger;
 
@@ -35,9 +34,9 @@ class TestCommand extends Command<int> {
 
   @override
   Future<int> run() async {
-    final ref = argResults?['ref'] as String;
+    final ref = argResults!['ref'] as String;
 
-    _logger.info('Running Flutter Golden tests against $ref');
+    _logger.info('Getting golden files from $ref');
 
     final checkRefProgress = await _goldenService.checkRef(ref: ref);
     if (checkRefProgress.exitCode != 0 ||
@@ -49,11 +48,8 @@ class TestCommand extends Command<int> {
     }
     _logger.info(checkRefProgress.stdout.toString());
 
-    // Step 0 - Cleanup
     await _goldenService.doCleanup(ref);
 
-    // Step 1 - Add the provided git reference to the worktree
-    // ignore: cascade_invocations
     _logger.info('Adding $ref to the worktree');
     final addWorktreeProgress = await _goldenService.addWorktree(ref: ref);
     if (addWorktreeProgress.exitCode != 0) {
@@ -64,7 +60,6 @@ class TestCommand extends Command<int> {
     }
     _logger.info(addWorktreeProgress.stdout.toString());
 
-    // Step 2 - Generate the golden files using the provided git reference
     // ignore: cascade_invocations
     _logger.info('Generating golden files using $ref');
     final generateGoldensProgress =
@@ -77,33 +72,8 @@ class TestCommand extends Command<int> {
     }
     _logger.info(generateGoldensProgress.stdout.toString());
 
-    // Step 3 - Fetch generated golden files
-    // ignore: cascade_invocations
-    _logger.info('Fetching generated golden files');
-    final fetchGoldensProgress = await _goldenService.fetchGoldens();
-    if (!fetchGoldensProgress) {
-      _logger
-        ..err('Failed to fetch generated golden files')
-        ..err(fetchGoldensProgress.toString());
-      return ExitCode.software.code;
-    }
+    await _goldenService.fetchGoldens();
 
-    // Step 4 - Run Flutter Golden tests
-    _logger.info('Running Flutter Golden tests');
-    final runGoldenTestsProgress = await _goldenService.runGoldenTests();
-    if (runGoldenTestsProgress.exitCode != 0) {
-      _logger
-        ..err('Failed to run Flutter Golden tests')
-        ..err(runGoldenTestsProgress.stderr.toString())
-        ..info(runGoldenTestsProgress.stdout.toString());
-      return ExitCode.software.code;
-    }
-    _logger.info(runGoldenTestsProgress.stdout.toString());
-
-    // Step 5 - Cleanup
-    await _goldenService.doCleanup(ref);
-
-    // ignore: cascade_invocations
     _logger.info('Done!');
     return ExitCode.success.code;
   }

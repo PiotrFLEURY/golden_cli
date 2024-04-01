@@ -4,6 +4,7 @@ import 'package:cli_completion/cli_completion.dart';
 import 'package:file/file.dart';
 import 'package:file/local.dart';
 import 'package:golden_cli/src/commands/commands.dart';
+import 'package:golden_cli/src/services/golden_service.dart';
 import 'package:golden_cli/src/version.dart';
 import 'package:mason_logger/mason_logger.dart';
 import 'package:process/process.dart';
@@ -28,8 +29,15 @@ class GoldenCliCommandRunner extends CompletionCommandRunner<int> {
     PubUpdater? pubUpdater,
     ProcessManager processManager = const LocalProcessManager(),
     FileSystem fileSystem = const LocalFileSystem(),
+    GoldenService? goldenService,
   })  : _logger = logger ?? Logger(),
         _pubUpdater = pubUpdater ?? PubUpdater(),
+        _goldenService = goldenService ??
+            GoldenService(
+              logger: logger ?? Logger(),
+              processManager: processManager,
+              fileSystem: fileSystem,
+            ),
         super(executableName, description) {
     // Add root options and flags
     argParser
@@ -45,12 +53,29 @@ class GoldenCliCommandRunner extends CompletionCommandRunner<int> {
       );
 
     // Add sub commands
+    addCommand(
+      CleanCommand(
+        logger: _logger,
+        goldenService: _goldenService,
+      ),
+    );
+    addCommand(
+      GenCommand(
+        logger: _logger,
+        goldenService: _goldenService,
+      ),
+    );
+    addCommand(
+      GetCommand(
+        logger: _logger,
+        goldenService: _goldenService,
+      ),
+    );
     addCommand(SampleCommand(logger: _logger));
     addCommand(
       TestCommand(
         logger: _logger,
-        processManager: processManager,
-        fileSystem: fileSystem,
+        goldenService: _goldenService,
       ),
     );
     addCommand(UpdateCommand(logger: _logger, pubUpdater: _pubUpdater));
@@ -61,6 +86,7 @@ class GoldenCliCommandRunner extends CompletionCommandRunner<int> {
 
   final Logger _logger;
   final PubUpdater _pubUpdater;
+  final GoldenService _goldenService;
 
   @override
   Future<int> run(Iterable<String> args) async {
