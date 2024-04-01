@@ -14,3 +14,7 @@ coverage/
 # Android studio and IntelliJ
 .idea
 .golden
+example/build/
+example/.dart_tool/
+example/.idea/
+example/.golden/

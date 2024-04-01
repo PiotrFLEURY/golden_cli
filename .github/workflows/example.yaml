@@ -1,0 +1,56 @@
+name: example Golden CLI CI
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on: 
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/example.yaml"
+      - "example/**"
+
+jobs:
+    
+  golden-check:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+        with:
+            fetch-depth: 0
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      
+      - name: Install dependencies
+        run: flutter pub get
+        working-directory: example
+
+        # Generate golden files for newly created tests
+      - name: Generate golden files for newly created tests
+        run: flutter test --update-goldens
+        working-directory: example
+
+        # Activate golden_cli
+      - name: Setup golden_cli
+        run: flutter pub global activate --source path .
+      
+        # Run golden tests
+        # This will add the main branch revision to the git worktree in .golden directory
+        # and generate golden files using the main branch revision
+        # Then it will copy the generated golden files to the current directory
+        # and run the tests to check any differences
+        #
+        # This is a way to ensure that golden generated with a safe and validated code
+        # can be used to check if the current code breaks something or not
+        # Nervermind which OS or version has been used to generate the golden files previously
+        #
+      - name: Check golden tests
+        run: golden test
+        working-directory: example
