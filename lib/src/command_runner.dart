@@ -1,9 +1,12 @@
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:cli_completion/cli_completion.dart';
+import 'package:file/file.dart';
+import 'package:file/local.dart';
 import 'package:golden_cli/src/commands/commands.dart';
 import 'package:golden_cli/src/version.dart';
 import 'package:mason_logger/mason_logger.dart';
+import 'package:process/process.dart';
 import 'package:pub_updater/pub_updater.dart';
 
 const executableName = 'golden';
@@ -23,6 +26,8 @@ class GoldenCliCommandRunner extends CompletionCommandRunner<int> {
   GoldenCliCommandRunner({
     Logger? logger,
     PubUpdater? pubUpdater,
+    ProcessManager processManager = const LocalProcessManager(),
+    FileSystem fileSystem = const LocalFileSystem(),
   })  : _logger = logger ?? Logger(),
         _pubUpdater = pubUpdater ?? PubUpdater(),
         super(executableName, description) {
@@ -41,7 +46,13 @@ class GoldenCliCommandRunner extends CompletionCommandRunner<int> {
 
     // Add sub commands
     addCommand(SampleCommand(logger: _logger));
-    addCommand(TestCommand(logger: _logger));
+    addCommand(
+      TestCommand(
+        logger: _logger,
+        processManager: processManager,
+        fileSystem: fileSystem,
+      ),
+    );
     addCommand(UpdateCommand(logger: _logger, pubUpdater: _pubUpdater));
   }
 
