@@ -30,19 +30,20 @@ dart pub global activate --source=path <path to this package>
 # Execute golden test using main branch as reference
 $ golden test
 
-# Execute golden test using a specific branch as reference
-$ golden test feature/branch
+# cleanup
+$ golden clean
 
-# Available options
-## --no-generate: Skip golden file generation
-## --no-execute: Skip golden file comparison
-## --no-cleanup: Skip git worktree cleanup
-## feature/branch: Branch name to compare against
-$ golden test \
-    --no-generate \
-    --no-execute \
-    --no-cleanup \
-    feature/branch
+# generate golden files
+$ golden gen
+
+# get goldens without generating them
+$ golden get
+
+# Using a specific branch
+$ golden test -r feature/branch
+$ golden clean -r feature/branch
+$ golden gen -r feature/branch
+$ golden get -r feature/branch
 
 # Show CLI version
 $ golden --version
